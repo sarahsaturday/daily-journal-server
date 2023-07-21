@@ -94,3 +94,27 @@ def update_entry(id, new_entry):
         return False
     else:
         return True
+
+def search_entries(search_term):
+    """
+    Search entries that contain the given word in the entry column.
+    """
+    with sqlite3.connect("dailyjournal.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Use the LIKE operator with % wildcard to search for the term in the entry column
+        db_cursor.execute("""
+            SELECT id, concept, entry, mood_id, date
+            FROM Entries
+            WHERE entry LIKE ?
+        """, ('%' + search_term + '%',))
+
+        entries = []
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            entry = Entry(row['id'], row['concept'], row['entry'], row['mood_id'], row['date'])
+            entries.append(entry.__dict__)
+
+    return entries
